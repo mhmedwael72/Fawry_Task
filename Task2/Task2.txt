@@ -1,0 +1,106 @@
+1️⃣ Verify DNS Resolution
+First, I checked DNS resolution using my system's current DNS (/etc/resolv.conf) and Google Public DNS (8.8.8.8):
+
+Command 1: Using system DNS
+dig internal.example.com
+
+=> Result:
+The domain name failed to resolve correctly.
+Indicates DNS issue or missing internal record.
+
+
+Command 2: Using Google Public DNS
+nslookup internal.example.com 8.8.8.8
+
+=> Result:
+Same failure (NXDOMAIN) because internal.example.com is an internal domain not known to public DNS.
+
+
+/etc/resolv.conf content:
+
+nameserver 10.255.255.254
+search domain.name
+
+
+
+
+---------------------------------------------------------------------------------
+2️⃣ Diagnose Service Reachability
+Since DNS was failing, I created a manual entry in /etc/hosts:
+Modified /etc/hosts: 192.168.10.5 internal.example.com
+
+Testing with Ping:
+ping internal.example.com
+
+=>Result:
+Name successfully resolves to 192.168.10.5.
+
+
+Testing with Curl
+
+curl http://internal.example.com
+
+=>Result:
+
+Request times out after ~130 seconds.
+Error:curl: (28) Failed to connect to internal.example.com port 80 after 129738 ms: Couldn't connect to server
+
+
+
+--------------------------------------------------------------------------------
+3️⃣ Trace the Issue – List All Possible Causes
+
+Layer	        Potential Cause
+DNS Layer :	Wrong DNS configuration / Missing record
+DNS Layer:	Internal DNS server (10.255.255.254) not functioning
+Service Layer:	Web server not running (Apache/Nginx stopped)
+Service Layer:	Web server listening on wrong port
+Network Layer:	Firewall blocking port 80 (HTTP)
+Network Layer:	Wrong IP address mapped manually
+Host Layer: 	Target server down, rebooting, or disconnected
+
+---------------------------------------------------------------------------------
+
+4️⃣ Propose and Apply Fixes
+For each potential cause:
+
+(1)
+Cause : Wrong DNS config			
+How to Confirm	: Check with dig and nslookup
+Command to Fix : Update /etc/resolv.conf or fix /etc/hosts
+
+2)
+Cause :DNS server down		
+How to Confirm:	Try to query DNS directly
+Command to Fix: Restart internal DNS server
+
+
+3)
+Cause :Web server down		
+How to Confirm:	Try telnet IP 80 or nmap IP
+Command to Fix: SSH into server and start service ( sudo systemctl restart apache2)
+
+
+4)
+Cause :Wrong port		
+How to Confirm:	Scan with nmap
+Command to Fix: Correct server config to use port 80
+
+
+5)
+Cause :Firewall blocking		
+How to Confirm:	test with telnet IP 80
+Command to Fix: Open firewall for HTTP port (sudo ufw allow 80/tcp)
+
+
+6)
+Cause :Server down		
+How to Confirm:	ping IP and check network
+Command to Fix: Restart server or fix network connection
+
+
+7)
+Cause:Wrong IP mapping		
+How to confirm:Confirm with correct network information
+command to fix :Correct /etc/hosts
+
