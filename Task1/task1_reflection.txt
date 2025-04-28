@@ -1,0 +1,23 @@
+
+
+(1) Argument and Options Handling
+
+- The script first checks if enough arguments are passed. If not, it prints a usage message.
+- It parses command-line options (`-n`, `-v`) and can handle them individually or in combination (`-vn`, `-nv`).
+- It performs a case-insensitive search (`grep -i`) unless the `-v` option is specified.
+- If the `-n` flag is present, the script displays line numbers with the matches.
+- If the `-v` flag is present, the script inverts the match (shows lines that do **not** match the pattern).
+
+(2) How Would I Add Regex / -i / -c / -l options?
+
+- **Regex**: The script would rely on `grep -E` or use `egrep` instead of simple matching.
+- **-i (Ignore case)**: Already partially supported. A flag to toggle case-insensitivity could be added.
+- **-c (Count)**: I would add a counter variable to track the number of matching lines and print the final count instead of lines.
+- **-l (List filenames)**: The script would check if there are multiple files passed, and only output filenames that contain matches.
+
+I would improve the option parsing by using `getopts` in bash, making the script more scalable for new flags.
+
+(3) Hardest Part to Implement
+
+The most challenging part was handling combined options (`-vn`, `-nv`, etc.) without missing any behaviors.  
+Ensuring the logic correctly applied both line numbering and inverted matching at the same time required careful ordering of conditions.
